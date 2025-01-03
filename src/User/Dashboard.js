@@ -14,7 +14,7 @@ const Dashboard = ({ navigation }) => {
   useEffect(() => {
     const fetchWaterData = async () => {
       try {
-        const userEmail = auth.currentUser.email; // Get logged-in user's email
+        const userEmail = auth.currentUser.email; 
         const waterConsumptionRef = collection(db, 'waterUsage');
         const q = query(waterConsumptionRef, where('userEmail', '==', userEmail));
 
@@ -26,17 +26,16 @@ const Dashboard = ({ navigation }) => {
           data.push({
             date: docData.date,
             liters: docData.litersUsed,
-            email: docData.userEmail, // Include email here
+            email: docData.userEmail, 
           });
         });
 
-        // If there's no data, generate some random data for demonstration
         if (data.length === 0) {
           const randomData = [];
           for (let i = 0; i < 7; i++) { // Generate 7 days of random data
             randomData.push({
               date: new Date(new Date().setDate(new Date().getDate() - i)),
-              liters: Math.floor(Math.random() * 101), // Random liters between 0 and 100
+              liters: Math.floor(Math.random() * 101), 
             });
           }
           setWaterData(randomData);
@@ -57,14 +56,13 @@ const Dashboard = ({ navigation }) => {
     return <Text>Loading...</Text>;
   }
 
-  // Prepare data for chart
   const chartData = {
-    labels: waterData.map(item => new Date(item.date).toLocaleDateString()), // Extract dates
+    labels: waterData.map(item => new Date(item.date).toLocaleDateString()),
     datasets: [
       {
-        data: waterData.map(item => item.liters), // Extract liters
-        strokeWidth: 2, // Set the stroke width of the line
-        color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, // Line color
+        data: waterData.map(item => item.liters), 
+        strokeWidth: 2, 
+        color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, 
       }
     ]
   };
@@ -77,7 +75,6 @@ const Dashboard = ({ navigation }) => {
     });
   }
 
-  // Y-axis labels (specifically for your use case)
   const yAxisLabels = [1, 5, 10, 15, 20, 25, 50, 75, 100, 120];
 
   return (
@@ -92,10 +89,9 @@ const Dashboard = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Water Consumption Chart */}
       <LineChart
         data={chartData}
-        width={Dimensions.get('window').width - 40} // Adjust width
+        width={Dimensions.get('window').width - 40} 
         height={220}
         chartConfig={{
           backgroundColor: '#1F2937',
@@ -112,11 +108,10 @@ const Dashboard = ({ navigation }) => {
             strokeWidth: '2',
             stroke: '#1F2937'
           },
-          yAxisLabel: '', // Hide label in front of the Y-axis values
+          yAxisLabel: '', 
           yAxisSuffix: ' Liters',
-          yAxisInterval: 10, // Set intervals on the Y axis
+          yAxisInterval: 10, 
           formatYLabel: (value) => {
-            // Manually round the values to match your custom labels
             const yVal = Math.round(value);
             return yAxisLabels.includes(yVal) ? `${yVal} Liters` : '';
           }
@@ -124,7 +119,6 @@ const Dashboard = ({ navigation }) => {
         bezier
       />
 
-      {/* Water Consumption History */}
       <ScrollView style={styles.historyContainer}>
         <Text style={styles.historyTitle}>Daily Consumption History</Text>
         {waterData.map((item, index) => (
