@@ -9,8 +9,8 @@ import {
   Button,
   StyleSheet,
 } from 'react-native';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../Firebase'; 
+import { collection, getDocs, doc, getDoc, addDoc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../Firebase'; // Ensure this is your Firestore initialization file
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { signOut } from 'firebase/auth';
 
@@ -19,7 +19,10 @@ const Admin = ({navigation}) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [waterLiters, setWaterLiters] = useState('');
+  const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
 
+  // Fetch all users when the component mounts
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -38,6 +41,7 @@ const Admin = ({navigation}) => {
     fetchUsers();
   }, []);
 
+  // Fetch detailed data for a selected user
   const handleUserPress = async (userId) => {
     try {
       const userDocRef = doc(db, 'users', userId);
@@ -55,6 +59,34 @@ const Admin = ({navigation}) => {
     }
   };
 
+  // Add water usage for a user
+  const handleAddWaterUsage = async () => {
+    if (!waterLiters || !selectedUser) {
+      console.error("Please provide water liters and select a user.");
+      return;
+    }
+
+    try {
+      // Get the user's email
+      const userDocRef = doc(db, 'users', selectedUser);
+      const userDoc = await getDoc(userDocRef);
+      const userEmail = userDoc.data().email;
+
+      // Add the water usage data
+      await addDoc(collection(db, 'waterUsage'), {
+        userEmail,
+        litersUsed: parseFloat(waterLiters),
+        date: new Date().toISOString(),
+      });
+
+      console.log('Water usage added for', userEmail);
+      setIsWaterModalVisible(false);
+      setWaterLiters('');
+    } catch (error) {
+      console.error('Error adding water usage:', error);
+    }
+  };
+
   const handleLogout = () => {
     signOut(auth).then(() => {
       console.log('Logged out');
@@ -65,8 +97,7 @@ const Admin = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-
-      <View style={{ flexDirection: 'row', paddingHorizontal: 20,justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 20, justifyContent: 'space-between' }}>
         <Text style={styles.title}>Admin Panel</Text>
         <View style={styles.iconContainer}>
           <TouchableOpacity onPress={handleLogout} style={styles.iconButton}>
@@ -102,6 +133,11 @@ const Admin = ({navigation}) => {
                 <Text style={styles.label}>Email: {userData.email}</Text>
                 <Text style={styles.label}>Address: {userData.address}</Text>
                 <Text style={styles.label}>Phone number: {userData.phoneNumber}</Text>
+                <Button
+                  title="Add Water Usage"
+                  onPress={() => setIsWaterModalVisible(true)}
+                  color="#3B82F6"
+                />
               </>
             ) : (
               <Text style={styles.label}>Loading...</Text>
@@ -112,6 +148,37 @@ const Admin = ({navigation}) => {
                 setIsModalVisible(false);
                 setUserData(null);
               }}
+              color="#EF4444"
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for adding water usage */}
+      <Modal
+        visible={isWaterModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsWaterModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Water Usage</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter liters of water"
+              keyboardType="numeric"
+              value={waterLiters}
+              onChangeText={setWaterLiters}
+            />
+            <Button
+              title="Submit"
+              onPress={handleAddWaterUsage}
+              color="#3B82F6"
+            />
+            <Button
+              title="Close"
+              onPress={() => setIsWaterModalVisible(false)}
               color="#EF4444"
             />
           </View>
@@ -171,6 +238,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#D1D5DB',
     marginVertical: 5,
+  },
+  input: {
+    backgroundColor: '#1F2937',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 15,
+    color: '#E5E7EB',
+    fontSize: 16,
   },
 });
 
