@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { collection, getDocs, doc, getDoc, addDoc, setDoc } from 'firebase/firestore';
-import { db, auth } from '../Firebase'; // Ensure this is your Firestore initialization file
+import { db, auth } from '../Firebase'; 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { signOut } from 'firebase/auth';
 
@@ -22,7 +22,6 @@ const Admin = ({navigation}) => {
   const [waterLiters, setWaterLiters] = useState('');
   const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
 
-  // Fetch all users when the component mounts
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -41,7 +40,6 @@ const Admin = ({navigation}) => {
     fetchUsers();
   }, []);
 
-  // Fetch detailed data for a selected user
   const handleUserPress = async (userId) => {
     try {
       const userDocRef = doc(db, 'users', userId);
@@ -59,7 +57,6 @@ const Admin = ({navigation}) => {
     }
   };
 
-  // Add water usage for a user
   const handleAddWaterUsage = async () => {
     if (!waterLiters || !selectedUser) {
       console.error("Please provide water liters and select a user.");
@@ -67,12 +64,10 @@ const Admin = ({navigation}) => {
     }
 
     try {
-      // Get the user's email
       const userDocRef = doc(db, 'users', selectedUser);
       const userDoc = await getDoc(userDocRef);
       const userEmail = userDoc.data().email;
 
-      // Add the water usage data
       await addDoc(collection(db, 'waterUsage'), {
         userEmail,
         litersUsed: parseFloat(waterLiters),
@@ -153,8 +148,7 @@ const Admin = ({navigation}) => {
           </View>
         </View>
       </Modal>
-
-      {/* Modal for adding water usage */}
+                
       <Modal
         visible={isWaterModalVisible}
         animationType="slide"
